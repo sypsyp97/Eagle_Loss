@@ -1,0 +1,13 @@
+name: eagle_loss
+channels:
+  - defaults
+  - pytorch
+dependencies:
+  - python=3.11
+  - pytorch
+  - torchvision
+  - pillow
+  - cudatoolkit=11.8  # Match this with your CUDA version
+  - pip
+  - pip:
+      - torchinfo  # if you need to print model summaries or any other pip packages
