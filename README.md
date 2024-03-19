@@ -1,4 +1,6 @@
 # Eagle_Loss
+[![arXiv](https://img.shields.io/badge/arXiv-2403.10695-b31b1b.svg)](http://arxiv.org/abs/2403.10695)
+
 
 Official implementation of the paper "EAGLE: An Edge-Aware Gradient Localization Enhanced Loss for CT Image Reconstruction". This repository includes the code for our novel Eagle-Loss function, designed to improve the sharpness of reconstructed CT image.
 
@@ -25,3 +27,22 @@ This repository is organized as follows:
 - `eagle_loss.py`: Contains the implementation of the Eagle-Loss function.
 
 - `model.py`: Defines the architecture of the U-Net that is used for FOV extension.
+
+## To-Do List
+
+- [ ] Training script.
+- [ ] Pre-trained model weights.
+- [ ] Usage examples.
+
+## Citation
+
+```
+@misc{sun2024eagle,
+      title={EAGLE: An Edge-Aware Gradient Localization Enhanced Loss for CT Image Reconstruction}, 
+      author={Yipeng Sun and Yixing Huang and Linda-Sophie Schneider and Mareike Thies and Mingxuan Gu and Siyuan Mei and Siming Bayer and Andreas Maier},
+      year={2024},
+      eprint={2403.10695},
+      archivePrefix={arXiv},
+      primaryClass={eess.IV}
+}
+```
