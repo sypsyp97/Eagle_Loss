@@ -6,7 +6,7 @@ Official implementation of the paper "EAGLE: An Edge-Aware Gradient Localization
 
 ## Requirements
 
-The Eagle_Loss code is developed using Python 3.11 and PyTorch 2.0.0. To ensure compatibility, please install the necessary packages as listed in the "environment.yml" file. Use the following commands to create and activate a conda environment:
+The Eagle_Loss code is developed using Python 3.11 and PyTorch 2.0.0. To ensure compatibility, please install the necessary packages using the following commands to create and activate a conda environment:
 
 ```bash
 conda env create -f environment.yml
