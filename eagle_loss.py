@@ -4,10 +4,11 @@ import torch.nn.functional as F
 
 
 class Eagle_Loss(nn.Module):
-    def __init__(self, patch_size, cpu=False):
+    def __init__(self, patch_size, cpu=False, cutoff=0.5):
         super(Eagle_Loss, self).__init__()
         self.patch_size = patch_size
         self.device = torch.device('cuda' if torch.cuda.is_available() and not cpu else 'cpu')
+        self.cutoff = cutoff
 
         # Scharr kernel for the gradient map calculation
         kernel_values = [[-3, 0, 3], [-10, 0, 10], [-3, 0, 3]]
@@ -52,22 +53,22 @@ class Eagle_Loss(nn.Module):
         shape0, shape1 = output_gradient.shape[-2] // self.patch_size, output_gradient.shape[-1] // self.patch_size
         return self.fft_loss(var_target.reshape(1, shape0, shape1), var_output.reshape(1, shape0, shape1))
 
-    def gaussian_highpass_weights2d(self, size, cutoff=0.2, strength=1):
+    def gaussian_highpass_weights2d(self, size):
         freq_x = torch.fft.fftfreq(size[0]).reshape(-1, 1).repeat(1, size[1]).to(self.device)
         freq_y = torch.fft.fftfreq(size[1]).reshape(1, -1).repeat(size[0], 1).to(self.device)
 
         freq_mag = torch.sqrt(freq_x ** 2 + freq_y ** 2)
-        weights = torch.exp(-0.5 * ((freq_mag - cutoff) ** 2) / (strength ** 2))
+        weights = torch.exp(-0.5 * ((freq_mag - self.cutoff) ** 2))
         return 1 - weights  # Inverted for high pass
 
-    def fft_loss(self, pred, gt, cutoff=0.5, strength=1):
+    def fft_loss(self, pred, gt):
         pred, gt = pred.to(self.device), gt.to(self.device)
         pred_fft = torch.fft.fft2(pred)
         gt_fft = torch.fft.fft2(gt)
         pred_mag = torch.sqrt(pred_fft.real ** 2 + pred_fft.imag ** 2)
         gt_mag = torch.sqrt(gt_fft.real ** 2 + gt_fft.imag ** 2)
 
-        weights = self.gaussian_highpass_weights2d(pred.size(), cutoff=cutoff, strength=strength).to(pred.device)
+        weights = self.gaussian_highpass_weights2d(pred.size()).to(pred.device)
         weighted_pred_mag = weights * pred_mag
         weighted_gt_mag = weights * gt_mag
 
