@@ -7,6 +7,7 @@ dependencies:
   - pytorch
   - torchvision
   - pillow
+  - unfoldNd
   - cudatoolkit=11.8  # Match this with your CUDA version
   - pip
   - pip:
