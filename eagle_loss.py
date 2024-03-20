@@ -4,6 +4,28 @@ import torch.nn.functional as F
 
 
 class Eagle_Loss(nn.Module):
+    """
+    Eagle_Loss is a custom loss function designed for image reconstruction tasks, with an emphasis on preserving
+    textures and edges in the reconstructed images. It operates by analyzing the variance of image gradients within
+    patches of the image, and by computing loss in the frequency domain using a high-pass filter.
+
+    Parameters:
+        patch_size (int): Defines the size of the patches used to calculate the variance in gradients.
+        cutoff (float): The cutoff frequency for the high-pass filter used in gaussian high-pass filtering.
+        cpu (bool): Determines whether the kernels are stored on the CPU (if True) or on CUDA (if False).
+
+    Methods:
+        forward(output, target): Calculates the Eagle loss between the output and target images.
+        calculate_gradient(img): Computes the x and y gradients of an image using the Scharr filters.
+        calculate_patch_loss(output_gradient, target_gradient): Measures the loss based on the variance of
+            gradients within the image patches.
+        gaussian_highpass_weights2d(size): Generates the weights for high-pass filtering in the frequency domain.
+        fft_loss(pred, gt): Calculates the loss in the frequency domain using the high-pass filter.
+
+    Example Usage:
+        eagle_loss = Eagle_Loss(patch_size=3)
+        loss = eagle_loss(output_image, target_image)
+    """
     def __init__(self, patch_size, cpu=False, cutoff=0.5):
         super(Eagle_Loss, self).__init__()
         self.patch_size = patch_size
