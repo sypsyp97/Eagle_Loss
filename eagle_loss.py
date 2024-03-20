@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import unfoldNd
 
 
 class Eagle_Loss(nn.Module):
@@ -95,3 +96,117 @@ class Eagle_Loss(nn.Module):
         weighted_gt_mag = weights * gt_mag
 
         return F.l1_loss(weighted_pred_mag, weighted_gt_mag)
+
+
+class Eagle_Loss_3D(nn.Module):
+    """
+    3D version of Eagle-Loss.
+
+    Attributes:
+        patch_size (int): The size of the patch to calculate local variance.
+        device (torch.device): The device on which to perform computations. 
+                               Defaults to CUDA if available, else CPU.
+        cutoff (float): The cutoff frequency for the high-pass filter used in FFT.
+        kernel_x, kernel_y, kernel_z (torch.FloatTensor): 3D kernels for gradient calculation in x, y, and z directions.
+        unfold (unfoldNd.UnfoldNd): An UnfoldNd object to extract patches from 3D volumes.
+
+    Methods:
+        gaussian_highpass_weights_3d(size): Generates Gaussian high-pass filter weights for given size.
+        fft_loss_3d(pred, gt): Calculates the loss in frequency domain using Fast Fourier Transform.
+        forward(output, target): Computes the loss given the network's output and the target.
+
+    Example:
+        # Initialize loss function
+        eagle_loss = Eagle_Loss_3D(patch_size=3)
+        # Calculate loss
+        loss = eagle_loss(output, target)
+    """
+    def __init__(self, patch_size, device=None, cutoff=0.5):
+        super(Eagle_Loss_3D, self).__init__()
+        self.patch_size = patch_size
+        self.device = device if device is not None else torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.cutoff = cutoff
+
+        self.kernel_x = torch.FloatTensor([
+            [[-9, 0, 9], [-30, 0, 30], [-9, 0, 9]],
+            [[-30, 0, 30], [-100, 0, 100], [-30, 0, 30]],
+            [[-9, 0, 9], [-30, 0, 30], [-9, 0, 9]]
+        ]).unsqueeze(0).unsqueeze(0).to(self.device)
+
+        self.kernel_y = torch.FloatTensor([
+            [[-9, -30, -9], [0, 0, 0], [9, 30, 9]],
+            [[-30, -100, -30], [0, 0, 0], [30, 100, 30]],
+            [[-9, -30, -9], [0, 0, 0], [9, 30, 9]]
+        ]).unsqueeze(0).unsqueeze(0).to(self.device)
+
+        self.kernel_z = torch.FloatTensor([
+            [[-9, -30, -9], [-30, -100, -30], [-9, -30, -9]],
+            [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+            [[9, 30, 9], [30, 100, 30], [9, 30, 9]]
+        ]).unsqueeze(0).unsqueeze(0).to(self.device)
+
+        self.unfold = unfoldNd.UnfoldNd(kernel_size=self.patch_size, stride=self.patch_size)
+
+    def gaussian_highpass_weights_3d(self, size):
+        freq_x = torch.fft.fftfreq(size[0]).reshape(-1, 1, 1).repeat(1, size[1], size[2]).to(self.device)
+        freq_y = torch.fft.fftfreq(size[1]).reshape(1, -1, 1).repeat(size[0], 1, size[2]).to(self.device)
+        freq_z = torch.fft.fftfreq(size[2]).reshape(1, 1, -1).repeat(size[0], size[1], 1).to(self.device)
+
+        freq_mag = torch.sqrt(freq_x ** 2 + freq_y ** 2 + freq_z ** 2)
+
+        weights = torch.exp(-0.5 * ((freq_mag - self.cutoff) ** 2))
+        weights = 1 - weights
+
+        return weights
+
+    def fft_loss_3d(self, pred, gt):
+        spatial_size = pred.shape[-3:]
+
+        pred_fft = torch.fft.fftn(pred)
+        gt_fft = torch.fft.fftn(gt)
+
+        pred_mag = torch.sqrt(pred_fft.real.pow(2) + pred_fft.imag.pow(2))
+        gt_mag = torch.sqrt(gt_fft.real.pow(2) + gt_fft.imag.pow(2))
+
+        weights = self.gaussian_highpass_weights_3d(spatial_size)
+        weighted_pred_mag = weights * pred_mag
+        weighted_gt_mag = weights * gt_mag
+
+        loss = F.l1_loss(weighted_pred_mag, weighted_gt_mag)
+        return loss
+
+    def forward(self, output, target):
+        output = output.to(self.device)
+        target = target.to(self.device)
+
+        gx_target = F.conv3d(target, self.kernel_x, stride=1, padding=1)
+        gy_target = F.conv3d(target, self.kernel_y, stride=1, padding=1)
+        gz_target = F.conv3d(target, self.kernel_z, stride=1, padding=1)
+        gx_output = F.conv3d(output, self.kernel_x, stride=1, padding=1)
+        gy_output = F.conv3d(output, self.kernel_y, stride=1, padding=1)
+        gz_output = F.conv3d(output, self.kernel_z, stride=1, padding=1)
+
+        gx_target_patches = self.unfold(gx_target)
+        gy_target_patches = self.unfold(gy_target)
+        gz_target_patches = self.unfold(gz_target)
+        gx_output_patches = self.unfold(gx_output)
+        gy_output_patches = self.unfold(gy_output)
+        gz_output_patches = self.unfold(gz_output)
+
+        var_target_x = torch.var(gx_target_patches, dim=1)
+        shape0, shape1, shape2 = target.shape[-3] // self.patch_size, target.shape[-2] // self.patch_size, target.shape[
+            -1] // self.patch_size
+        var_output_x = torch.var(gx_output_patches, dim=1)
+        var_target_y = torch.var(gy_target_patches, dim=1)
+        var_output_y = torch.var(gy_output_patches, dim=1)
+        var_target_z = torch.var(gz_target_patches, dim=1)
+        var_output_z = torch.var(gz_output_patches, dim=1)
+
+        egale_loss_3d = (self.fft_loss_3d(var_target_x.reshape(1, shape0, shape1, shape2),
+                                          var_output_x.reshape(1, shape0, shape1, shape2)) +
+                         self.fft_loss_3d(var_target_y.reshape(1, shape0, shape1, shape2),
+                                          var_output_y.reshape(1, shape0, shape1, shape2)) +
+                         self.fft_loss_3d(var_target_z.reshape(1, shape0, shape1, shape2),
+                                          var_output_z.reshape(1, shape0, shape1, shape2)))
+
+        return egale_loss_3d
