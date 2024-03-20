@@ -100,7 +100,7 @@ class Eagle_Loss(nn.Module):
 
 class Eagle_Loss_3D(nn.Module):
     """
-    3D version of Eagle-Loss.
+    3D version of Eagle-Loss, not tested yet.
 
     Attributes:
         patch_size (int): The size of the patch to calculate local variance.
