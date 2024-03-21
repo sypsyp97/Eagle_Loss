@@ -37,12 +37,10 @@ This repository is organized as follows:
 ## Citation
 
 ```
-@misc{sun2024eagle,
-      title={EAGLE: An Edge-Aware Gradient Localization Enhanced Loss for CT Image Reconstruction}, 
-      author={Yipeng Sun and Yixing Huang and Linda-Sophie Schneider and Mareike Thies and Mingxuan Gu and Siyuan Mei and Siming Bayer and Andreas Maier},
-      year={2024},
-      eprint={2403.10695},
-      archivePrefix={arXiv},
-      primaryClass={eess.IV}
+@article{sun2024eagle,
+  title={EAGLE: An Edge-Aware Gradient Localization Enhanced Loss for CT Image Reconstruction},
+  author={Sun, Yipeng and Huang, Yixing and Schneider, Linda-Sophie and Thies, Mareike and Gu, Mingxuan and Mei, Siyuan and Bayer, Siming and Maier, Andreas},
+  journal={arXiv preprint arXiv:2403.10695},
+  year={2024}
 }
 ```
