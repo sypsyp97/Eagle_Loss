@@ -24,7 +24,7 @@ This repository is organized as follows:
 
 - `dataset.py`: This script is responsible for handling the dataset.
 
-- `eagle_loss.py`: Contains the implementation of the Eagle-Loss function.
+- `eagle_loss.py`: Contains the implementation of the Eagle-Loss function. For patch_size, we suggest set to 3.
 
 - `model.py`: Defines the architecture of the U-Net that is used for FOV extension.
 
