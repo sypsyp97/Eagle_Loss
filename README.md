@@ -28,10 +28,12 @@ This repository is organized as follows:
 
 - `model.py`: Defines the architecture of the U-Net that is used for FOV extension.
 
+- `train.py`: This script is used to train the model.
+
 ## To-Do List
 
-- [ ] Training script.
-- [ ] Pre-trained model weights.
+- [x] Training script.
+- [x] Pre-trained model weights.
 - [ ] Usage examples.
 
 ## Citation
