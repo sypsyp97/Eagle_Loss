@@ -30,8 +30,8 @@ This repository is organized as follows:
 
 ## To-Do List
 
-- [ ] Training script.
-- [ ] Pre-trained model weights.
+- [x] Training script.
+- [x] Pre-trained model weights.
 - [ ] Usage examples.
 
 ## Citation
