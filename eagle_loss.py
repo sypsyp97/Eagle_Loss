@@ -62,19 +62,22 @@ class Eagle_Loss(nn.Module):
 
     def calculate_gradient(self, img):
         img = img.to(self.device)
-        gx = F.conv2d(img, self.kernel_x, padding=1)
-        gy = F.conv2d(img, self.kernel_y, padding=1)
+        gx = F.conv2d(img, self.kernel_x, padding=1, groups=img.shape[1])
+        gy = F.conv2d(img, self.kernel_y, padding=1, groups=img.shape[1])
         return gx, gy
 
     def calculate_patch_loss(self, output_gradient, target_gradient):
         output_gradient, target_gradient = output_gradient.to(self.device), target_gradient.to(self.device)
-        output_patches = self.unfold(output_gradient)
-        target_patches = self.unfold(target_gradient)
-        var_output = torch.var(output_patches, dim=1, keepdim=True)
-        var_target = torch.var(target_patches, dim=1, keepdim=True)
+        batch_size = output_gradient.size(0)
+        num_channels = output_gradient.size(1)
+        patch_size_squared = self.patch_size * self.patch_size
+        output_patches = self.unfold(output_gradient).view(batch_size, num_channels, patch_size_squared, -1)
+        target_patches = self.unfold(target_gradient).view(batch_size, num_channels, patch_size_squared, -1)
+        var_output = torch.var(output_patches, dim=2, keepdim=True)
+        var_target = torch.var(target_patches, dim=2, keepdim=True)
 
         shape0, shape1 = output_gradient.shape[-2] // self.patch_size, output_gradient.shape[-1] // self.patch_size
-        return self.fft_loss(var_target.reshape(1, shape0, shape1), var_output.reshape(1, shape0, shape1))
+        return self.fft_loss(var_target.view(batch_size, num_channels, shape0, shape1), var_output.view(batch_size, num_channels, shape0, shape1))
 
     def gaussian_highpass_weights2d(self, size):
         freq_x = torch.fft.fftfreq(size[0]).reshape(-1, 1).repeat(1, size[1]).to(self.device)
@@ -91,7 +94,7 @@ class Eagle_Loss(nn.Module):
         pred_mag = torch.sqrt(pred_fft.real ** 2 + pred_fft.imag ** 2)
         gt_mag = torch.sqrt(gt_fft.real ** 2 + gt_fft.imag ** 2)
 
-        weights = self.gaussian_highpass_weights2d(pred.size()).to(pred.device)
+        weights = self.gaussian_highpass_weights2d(pred.size()[2:]).to(pred.device)
         weighted_pred_mag = weights * pred_mag
         weighted_gt_mag = weights * gt_mag
 
