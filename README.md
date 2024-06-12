@@ -34,7 +34,7 @@ This repository is organized as follows:
 
 - [x] Training script.
 - [x] Pre-trained model weights.
-- [ ] Usage examples.
+- [x] Usage examples.
 
 ## Citation
 
