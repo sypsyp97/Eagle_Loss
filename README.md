@@ -18,7 +18,7 @@ pip install -e .
 FOV extension data can be downloaded [here](https://drive.google.com/file/d/11Pkdw420Al4ubLKce4fNRrEqAD_37Gfg/view?usp=sharing).
 
 ## Usage
-You can find the example usage in [`example.py`](examples\example.py).
+You can find the example usage in [`example.py`](examples/example.py).
 
 ## Citation
 
