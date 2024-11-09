@@ -4,10 +4,9 @@ channels:
   - pytorch
 dependencies:
   - python=3.11
-  - pytorch
+  - pytorch<2.5.0
   - torchvision
   - pillow
-  - unfoldNd
   - cudatoolkit=11.8  # Match this with your CUDA version
   - pip
   - pip:
