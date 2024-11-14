@@ -21,7 +21,7 @@ FOV extension data can be downloaded [here](https://drive.google.com/file/d/11Pk
 You can find the example usage in [`example.py`](examples/example.py).
 
 ## Citation
-
+Please cite the following paper and star this project if you use this repository in your research. Thank you!
 ```
 @article{sun2024eagle,
   title={EAGLE: An Edge-Aware Gradient Localization Enhanced Loss for CT Image Reconstruction},
