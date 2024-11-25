@@ -8,6 +8,7 @@ PyTorch implementation of the paper ["EAGLE: An Edge-Aware Gradient Localization
 To ensure compatibility, please install the necessary packages using the following commands to create a conda environment and install eagle_loss package.:
 
 ```bash
+git clone https://github.com/sypsyp97/Eagle_Loss.git
 conda env create -f environment.yml
 conda activate eagle_loss
 cd eagle_loss
