@@ -10,8 +10,8 @@ To ensure compatibility, please install the necessary packages using the followi
 ```bash
 git clone https://github.com/sypsyp97/Eagle_Loss.git
 conda env create -f environment.yml
-conda activate Eagle_Loss
-cd eagle_loss
+conda activate eagle_loss
+cd Eagle_Loss
 pip install -e .
 ```
 
