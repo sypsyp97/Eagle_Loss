@@ -1,11 +1,10 @@
 from setuptools import setup, find_packages
-
 setup(
     name="eagle-loss",
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
-        "torch<2.5.0",
+        "torch>=2.7.1-rc1",
         "torchvision",
         "Pillow",
     ],
